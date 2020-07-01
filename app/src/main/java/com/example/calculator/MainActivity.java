@@ -174,8 +174,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 Calculation calculation = new Calculation(inputTextArr);
-                String answer = calculation.solveAnswer();
-                answerText.setText(answer);
+                double answer = calculation.solveAnswer();
+                answerText.setText(""+ answer);
             }
         });
 
@@ -192,6 +192,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(inputText.length() < 1) {
+                    return;
+                }
                 inputTextArr.remove(cursorIndex-1);
                 cursorIndex--;
                 //inputText.onResolvePointerIcon( , cursorIndex);

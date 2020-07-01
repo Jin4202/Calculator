@@ -4,31 +4,28 @@ import java.util.ArrayList;
 
 public class Calculation {
 
-    private ArrayList<String> stringArrayList;
+    private ArrayList<Token> mStringArrayList;
 
     public Calculation(ArrayList<Character> arr) {
-        stringArrayList = setStringArrayList(arr);
+         mStringArrayList = setTokenArrayList(arr);
     }
 
-    public String solveAnswer() {
-        ArrayList<String> strArr = stringArrayList;
-        return solveAnswer(strArr).get(0);
+    public double solveAnswer() {
+        ArrayList<Token> tokenArr = mStringArrayList;
+        return solveAnswer(tokenArr).get(0).getNumber();
     }
-    private ArrayList<String> solveAnswer(ArrayList<String> strArr) {
-        while(strArr.contains("(")) {
-            ArrayList<ArrayList<String>> arrays = splitByParenthesis(strArr);
-            ArrayList<String> solvedArray = solveAnswer(arrays.get(1));
-            strArr = new ArrayList<>();
-            strArr.addAll(arrays.get(0));
-            strArr.addAll(solvedArray);
-            strArr.addAll(arrays.get(2));
+    private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) {
+        while(isParenthesisExist(tokenArr)) {
+            ArrayList<ArrayList<Token>> arrays = splitByParenthesis(tokenArr);
+            ArrayList<Token> solvedArray = solveAnswer(arrays.get(1));
+            tokenArr = new ArrayList<>();
+            tokenArr.addAll(arrays.get(0));
+            tokenArr.addAll(solvedArray);
+            tokenArr.addAll(arrays.get(2));
         }
-
-        strArr = solveForMultiply(strArr);
-        strArr = solveForDivide(strArr);
-        strArr = solveForPlusOrMinus(strArr);
-
-        return strArr;
+        solve(tokenArr, PrimaryOperators.class);
+        solve(tokenArr, SecondaryOperators.class);
+        return tokenArr;
     }
 
     //Print stringArrayList (for debug/testing)
@@ -40,126 +37,81 @@ public class Calculation {
         System.out.println();
     }
 
-    private ArrayList<String> solveForMultiply(ArrayList<String> strArr) {
-        ArrayList<String> newStrArr = new ArrayList<>();
-        for(int i = 0; i < strArr.size(); i++) {
-            String s = strArr.get(i);
-            if(s.equals("x")) {
-                String num1str = strArr.get(i-1);
-                String num2str = strArr.get(i+1);
-                double num1 = Double.parseDouble(num1str);
-                double num2 = Double.parseDouble(num2str);
-                double result = num1 * num2;
-                String resultStr = Double.toString(result);
-                strArr.set(i-1, resultStr);
-                strArr.remove(i);
-                strArr.remove(i);
-                newStrArr.remove(newStrArr.size()-1);
-                newStrArr.add(resultStr);
-                i--;
-            } else {
-                newStrArr.add(s);
+    private boolean isParenthesisExist(ArrayList<Token> tokenArr) {
+        for(Token t : tokenArr) {
+            if(t instanceof Parenthesis) {
+                return true;
             }
         }
-        return newStrArr;
+        return false;
     }
 
-    //Need change for exceptions such as [ zero division ]
-    private ArrayList<String> solveForDivide(ArrayList<String> strArr) {
-        ArrayList<String> newStrArr = new ArrayList<>();
-        for(int i = 0; i < strArr.size(); i++) {
-            String s = strArr.get(i);
-            if(s.equals("/")) {
-                String num1str = strArr.get(i-1);
-                String num2str = strArr.get(i+1);
-                double num1 = Double.parseDouble(num1str);
-                double num2 = Double.parseDouble(num2str);
-                if(Double.compare(num2,0) == 0) {
-                    num2 = 1;
-                }
-                double result = num1 / num2;
-                String resultStr = Double.toString(result);
-                strArr.set(i-1, resultStr);
-                strArr.remove(i);
-                strArr.remove(i);
-                newStrArr.remove(newStrArr.size()-1);
-                newStrArr.add(resultStr);
+
+
+    private void solve(ArrayList<Token> tokenArr, Class<?> c) {
+        for(int i = 0; i < tokenArr.size(); i++) {
+            Token current = tokenArr.get(i);
+            if(c.isInstance(current)) {
+                OperatorToken operatorTokenToken = (OperatorToken) current;
+                NumberToken solvedToken = operatorTokenToken.calculate(tokenArr.get(i-1), tokenArr.get(i+1));
+
+                tokenArr.set(i-1, solvedToken);
+                tokenArr.remove(i);
+                tokenArr.remove(i);
                 i--;
-            } else {
-                newStrArr.add(s);
             }
         }
-        return newStrArr;
     }
 
-    private ArrayList<String> solveForPlusOrMinus(ArrayList<String> strArr) {
-        ArrayList<String> newStrArr = new ArrayList<>();
-        for(int i = 0; i < strArr.size(); i++) {
-            String s = strArr.get(i);
-            if(s.equals("+") || s.equals("-")) {
-                String num1str = strArr.get(i-1);
-                String num2str = strArr.get(i+1);
-                double num1 = Double.parseDouble(num1str);
-                double num2 = Double.parseDouble(num2str);
-                double result;
-                if(s.equals("+")) {
-                    result = num1 + num2;
-                } else {
-                    result = num1 - num2;
-                }
-                String resultStr = Double.toString(result);
-                strArr.set(i-1, resultStr);
-                strArr.remove(i);
-                strArr.remove(i);
-                newStrArr.remove(newStrArr.size()-1);
-                newStrArr.add(resultStr);
-                i--;
-            } else {
-                newStrArr.add(s);
-            }
-        }
-        return newStrArr;
-    }
-
-    private ArrayList<String> setStringArrayList(ArrayList<Character> charArr) {
-        ArrayList<String> strArr = new ArrayList<>();
+    private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) {
+        ArrayList<Token> tokenArr = new ArrayList<>();
         StringBuffer number = new StringBuffer();
         for(char c : charArr) {
-            if(isNumber(c)) {
+            if(Character.isDigit(c) || c == '.') {
                 number.append(c);
             } else {
                 if(!number.toString().equals("")) {
-                    strArr.add(number.toString());
+                    tokenArr.add(new NumberToken(Double.parseDouble(number.toString())));
                 }
-                strArr.add(""+c);
+                if(c == 'x') {
+                    tokenArr.add(new Multiply());
+                } else if(c == '/') {
+                    tokenArr.add(new Divide());
+                } else if(c == '+') {
+                    tokenArr.add(new Plus());
+                } else if(c == '-') {
+                    tokenArr.add(new Minus());
+                } else {
+                    tokenArr.add(new Parenthesis(c));
+                }
+
                 number = new StringBuffer();
             }
         }
-        strArr.add(number.toString());
-        return strArr;
+
+        if(!number.toString().equals("")) {
+            tokenArr.add(new NumberToken(Double.parseDouble(number.toString())));
+        }
+        return tokenArr;
     }
 
-    private boolean isNumber(char c) {
-        return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' || c =='.');
-    }
+    private ArrayList<ArrayList<Token>> splitByParenthesis(ArrayList<Token> arr) {
+        ArrayList<ArrayList<Integer>> indexOfPs = findingParenthesis(arr);
+        int fromIndex = indexOfPs.get(0).get(0);
+        int toIndex = indexOfPs.get(1).get(indexOfPs.get(1).size()-1);
 
-    private ArrayList<ArrayList<String>> splitByParenthesis(ArrayList<String> arr) {
-        ArrayList<ArrayList<Integer>> IndexOfPs = findingParenthesis(arr);
-        int fromIndex = IndexOfPs.get(0).get(0);
-        int toIndex = IndexOfPs.get(1).get(IndexOfPs.get(1).size()-1);
-
-        ArrayList<String> subArray0 = subArrayList(arr, 0, fromIndex);
-        ArrayList<String> subArray1 = subArrayList(arr, fromIndex+1, toIndex);
-        ArrayList<String> subArray2 = subArrayList(arr, toIndex+1, arr.size());
-        ArrayList<ArrayList<String>> arrays = new ArrayList<>();
+        ArrayList<Token> subArray0 = subArrayList(arr, 0, fromIndex);
+        ArrayList<Token> subArray1 = subArrayList(arr, fromIndex+1, toIndex);
+        ArrayList<Token> subArray2 = subArrayList(arr, toIndex+1, arr.size());
+        ArrayList<ArrayList<Token>> arrays = new ArrayList<>();
         arrays.add(subArray0);
         arrays.add(subArray1);
         arrays.add(subArray2);
         return arrays;
     }
 
-    private ArrayList<String> subArrayList(ArrayList<String> arr, int fromIndex, int toIndex) {
-        ArrayList<String> substractedList = new ArrayList<>();
+    private ArrayList<Token> subArrayList(ArrayList<Token> arr, int fromIndex, int toIndex) {
+        ArrayList<Token> substractedList = new ArrayList<>();
         for(int i = fromIndex; i < toIndex; i++) {
             substractedList.add(arr.get(i));
         }
@@ -167,15 +119,16 @@ public class Calculation {
     }
 
     //Need change for the exceptions such as [ when the parenthesis are not paired]
-    private ArrayList<ArrayList<Integer>> findingParenthesis(ArrayList<String> arr) {
+    private ArrayList<ArrayList<Integer>> findingParenthesis(ArrayList<Token> arr) {
         ArrayList<Integer> openingStack = new ArrayList<>();
         ArrayList<Integer> closingStack = new ArrayList<>();
 
         for(int i = 0; i < arr.size(); i++) {
-            String s = arr.get(i);
-            if(s.equals("(")) {
+            Token token = arr.get(i);
+            char c = token.getOperator();
+            if (c == '(') {
                 openingStack.add(i);
-            } else if(s.equals(")")) {
+            } else if (c == ')') {
                 closingStack.add(i);
             }
             if(openingStack.size() != 0 && openingStack.size() == closingStack.size()) {
