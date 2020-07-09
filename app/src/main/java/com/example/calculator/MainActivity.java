@@ -2,13 +2,11 @@ package com.example.calculator;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -173,9 +171,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonSolve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(inputText.length() == 0) {
+                    return;
+                }
                 Calculation calculation = new Calculation(inputTextArr);
-                double answer = calculation.solveAnswer();
-                answerText.setText(""+ answer);
+                if(calculation.isErrorOccurred()) {
+                    throwToast(calculation.getErrorMessage());
+                } else {
+                    String answer = Double.toString(calculation.getAnswer());
+                    answerText.setText(answer);
+                }
             }
         });
 
@@ -205,6 +210,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 inputText.setText(inputStr);
             }
         });
+
+
     }
 
     private void addInputText(char c) {
@@ -217,6 +224,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         inputText.setText(text);
     }
+
+    private void throwToast(String message) {
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
 
     @Override
     public void onClick(View view) {
