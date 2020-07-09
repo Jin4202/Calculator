@@ -5,13 +5,57 @@ import java.util.ArrayList;
 public class Calculation {
 
     private ArrayList<Token> mStringArrayList;
+    private double answer;
+    private boolean errorOccurred;
+    private String errorMessage;
 
     public Calculation(ArrayList<Character> arr) {
-         mStringArrayList = setTokenArrayList(arr);
+        errorOccurred = false;
+        errorMessage = "No Error";
+        mStringArrayList = setTokenArrayList(arr);
+        pairParenthesis();
+        answer = solveAnswer();
     }
 
-    public double solveAnswer() {
+    public double getAnswer() {
+        return answer;
+    }
+
+    public boolean isErrorOccurred() {
+        return errorOccurred;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    private void pairParenthesis() {
+        int opening = 0;
+        int closing = 0;
+        for(Token t : mStringArrayList) {
+            if(t instanceof Parenthesis) {
+                if(t.getOperator() == '(') {
+                    opening++;
+                } else {
+                    closing++;
+                }
+            }
+        }
+        if(opening != closing) {
+            int addParenthesis = opening - closing;
+            for(int i = 0; i < Math.abs(addParenthesis); i++) {
+                if(addParenthesis > 0) {
+                    mStringArrayList.add(new Parenthesis(')'));
+                } else {
+                    mStringArrayList.add(0, new Parenthesis('('));
+                }
+            }
+        }
+    }
+
+    private double solveAnswer() {
         ArrayList<Token> tokenArr = mStringArrayList;
+
         return solveAnswer(tokenArr).get(0).getNumber();
     }
     private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) {
@@ -24,6 +68,7 @@ public class Calculation {
             tokenArr.addAll(arrays.get(2));
         }
         solve(tokenArr, PrimaryOperators.class);
+
         solve(tokenArr, SecondaryOperators.class);
         return tokenArr;
     }
@@ -46,21 +91,40 @@ public class Calculation {
         return false;
     }
 
-
-
     private void solve(ArrayList<Token> tokenArr, Class<?> c) {
         for(int i = 0; i < tokenArr.size(); i++) {
             Token current = tokenArr.get(i);
             if(c.isInstance(current)) {
                 OperatorToken operatorTokenToken = (OperatorToken) current;
-                NumberToken solvedToken = operatorTokenToken.calculate(tokenArr.get(i-1), tokenArr.get(i+1));
 
+                if(i+1 >= tokenArr.size()) {
+                    error("Invalid format used");
+                    tokenArr.add(new NumberToken(1));   //dump object
+                } else if(i == 0){
+                    error("Invalid format used");
+                    tokenArr.add(0, new NumberToken(1));    //dump object
+                } else if(tokenArr.get(i+1) instanceof OperatorToken) {
+                    error("Invalid format used");
+                    tokenArr.add(i+1, new NumberToken(1)); //dump object
+                }
+                Token num1 = tokenArr.get(i-1);
+                Token num2 = tokenArr.get(i+1);
+                NumberToken solvedToken = operatorTokenToken.calculate(num1, num2);
+                if(solvedToken == null) {
+                    error("Cannot divide by zero");
+                    solvedToken = new NumberToken(1);   //dump object
+                }
                 tokenArr.set(i-1, solvedToken);
                 tokenArr.remove(i);
                 tokenArr.remove(i);
                 i--;
             }
         }
+    }
+
+    private void error(String message) {
+        errorOccurred = true;
+        errorMessage = message;
     }
 
     private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) {
@@ -84,7 +148,6 @@ public class Calculation {
                 } else {
                     tokenArr.add(new Parenthesis(c));
                 }
-
                 number = new StringBuffer();
             }
         }
@@ -136,11 +199,14 @@ public class Calculation {
             }
         }
 
+
+
         ArrayList<ArrayList<Integer>> arrays = new ArrayList<>();
         arrays.add(openingStack);
         arrays.add(closingStack);
         return arrays;
     }
+
 
 
 }
