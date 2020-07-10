@@ -5,28 +5,10 @@ import java.util.ArrayList;
 public class Calculation {
 
     private ArrayList<Token> mStringArrayList;
-    private double answer;
-    private boolean errorOccurred;
-    private String errorMessage;
 
     public Calculation(ArrayList<Character> arr) {
-        errorOccurred = false;
-        errorMessage = "No Error";
         mStringArrayList = setTokenArrayList(arr);
         pairParenthesis();
-        answer = solveAnswer();
-    }
-
-    public double getAnswer() {
-        return answer;
-    }
-
-    public boolean isErrorOccurred() {
-        return errorOccurred;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
     }
 
     private void pairParenthesis() {
@@ -41,9 +23,11 @@ public class Calculation {
                 }
             }
         }
+
         if(opening != closing) {
             int addParenthesis = opening - closing;
-            for(int i = 0; i < Math.abs(addParenthesis); i++) {
+            int repeat = Math.abs(addParenthesis);
+            for(int i = 0; i < repeat; i++) {
                 if(addParenthesis > 0) {
                     mStringArrayList.add(new Parenthesis(')'));
                 } else {
@@ -53,12 +37,15 @@ public class Calculation {
         }
     }
 
-    private double solveAnswer() {
+    public double solveAnswer() throws InvalidFormatError{
         ArrayList<Token> tokenArr = mStringArrayList;
-
+        ArrayList<Token> answer = solveAnswer(tokenArr);
+        if(answer.size() == 0) {
+            throw new InvalidFormatError();
+        }
         return solveAnswer(tokenArr).get(0).getNumber();
     }
-    private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) {
+    private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) throws InvalidFormatError{
         while(isParenthesisExist(tokenArr)) {
             ArrayList<ArrayList<Token>> arrays = splitByParenthesis(tokenArr);
             ArrayList<Token> solvedArray = solveAnswer(arrays.get(1));
@@ -91,40 +78,25 @@ public class Calculation {
         return false;
     }
 
-    private void solve(ArrayList<Token> tokenArr, Class<?> c) {
+    private void solve(ArrayList<Token> tokenArr, Class<?> c) throws InvalidFormatError{
         for(int i = 0; i < tokenArr.size(); i++) {
             Token current = tokenArr.get(i);
             if(c.isInstance(current)) {
                 OperatorToken operatorTokenToken = (OperatorToken) current;
 
-                if(i+1 >= tokenArr.size()) {
-                    error("Invalid format used");
-                    tokenArr.add(new NumberToken(1));   //dump object
-                } else if(i == 0){
-                    error("Invalid format used");
-                    tokenArr.add(0, new NumberToken(1));    //dump object
-                } else if(tokenArr.get(i+1) instanceof OperatorToken) {
-                    error("Invalid format used");
-                    tokenArr.add(i+1, new NumberToken(1)); //dump object
+                if(i+1 >= tokenArr.size() || i == 0 || tokenArr.get(i+1) instanceof OperatorToken) {
+                    throw new InvalidFormatError();
                 }
+
                 Token num1 = tokenArr.get(i-1);
                 Token num2 = tokenArr.get(i+1);
                 NumberToken solvedToken = operatorTokenToken.calculate(num1, num2);
-                if(solvedToken == null) {
-                    error("Cannot divide by zero");
-                    solvedToken = new NumberToken(1);   //dump object
-                }
                 tokenArr.set(i-1, solvedToken);
                 tokenArr.remove(i);
                 tokenArr.remove(i);
                 i--;
             }
         }
-    }
-
-    private void error(String message) {
-        errorOccurred = true;
-        errorMessage = message;
     }
 
     private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) {
@@ -158,7 +130,7 @@ public class Calculation {
         return tokenArr;
     }
 
-    private ArrayList<ArrayList<Token>> splitByParenthesis(ArrayList<Token> arr) {
+    private ArrayList<ArrayList<Token>> splitByParenthesis(ArrayList<Token> arr) throws InvalidFormatError {
         ArrayList<ArrayList<Integer>> indexOfPs = findingParenthesis(arr);
         int fromIndex = indexOfPs.get(0).get(0);
         int toIndex = indexOfPs.get(1).get(indexOfPs.get(1).size()-1);
@@ -174,15 +146,15 @@ public class Calculation {
     }
 
     private ArrayList<Token> subArrayList(ArrayList<Token> arr, int fromIndex, int toIndex) {
-        ArrayList<Token> substractedList = new ArrayList<>();
+        ArrayList<Token> subtractedList = new ArrayList<>();
         for(int i = fromIndex; i < toIndex; i++) {
-            substractedList.add(arr.get(i));
+            subtractedList.add(arr.get(i));
         }
-        return substractedList;
+        return subtractedList;
     }
 
     //Need change for the exceptions such as [ when the parenthesis are not paired]
-    private ArrayList<ArrayList<Integer>> findingParenthesis(ArrayList<Token> arr) {
+    private ArrayList<ArrayList<Integer>> findingParenthesis(ArrayList<Token> arr) throws InvalidFormatError {
         ArrayList<Integer> openingStack = new ArrayList<>();
         ArrayList<Integer> closingStack = new ArrayList<>();
 
@@ -198,7 +170,6 @@ public class Calculation {
                 break;
             }
         }
-
 
 
         ArrayList<ArrayList<Integer>> arrays = new ArrayList<>();

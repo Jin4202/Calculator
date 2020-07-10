@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -175,11 +176,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 Calculation calculation = new Calculation(inputTextArr);
-                if(calculation.isErrorOccurred()) {
-                    throwToast(calculation.getErrorMessage());
-                } else {
-                    String answer = Double.toString(calculation.getAnswer());
-                    answerText.setText(answer);
+                try {
+                    answerText.setText(String.format(Locale.US, "%f", calculation.solveAnswer()));
+                } catch (InvalidFormatError e) {
+                    Toast.makeText(MainActivity.this, "Invalid format used", Toast.LENGTH_SHORT).show();
+                } catch (ArithmeticException e) {
+                    Toast.makeText(MainActivity.this, "Cannot divide by zero", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -224,11 +226,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         inputText.setText(text);
     }
-
-    private void throwToast(String message) {
-        Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-    }
-
 
     @Override
     public void onClick(View view) {
