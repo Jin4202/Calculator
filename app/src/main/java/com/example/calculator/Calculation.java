@@ -7,14 +7,48 @@ public class Calculation {
     private ArrayList<Token> mStringArrayList;
 
     public Calculation(ArrayList<Character> arr) {
-         mStringArrayList = setTokenArrayList(arr);
+        mStringArrayList = setTokenArrayList(arr);
+        pairParenthesis();
     }
 
-    public double solveAnswer() {
+    private void pairParenthesis() {
+        int opening = 0;
+        int closing = 0;
+        for(Token t : mStringArrayList) {
+            if(t instanceof Parenthesis) {
+                if(t.getOperator() == '(') {
+                    opening++;
+                } else {
+                    closing++;
+                }
+            }
+        }
+
+        if(opening != closing) {
+            int addParenthesis = opening - closing;
+            int repeat = Math.abs(addParenthesis);
+            Parenthesis p;
+            if(addParenthesis > 0) {
+                p = new Parenthesis(')');
+            } else {
+                p = new Parenthesis('(');
+            }
+
+            for(int i = 0; i < repeat; i++) {
+                mStringArrayList.add(p);
+            }
+        }
+    }
+
+    public double solveAnswer() throws InvalidFormatError{
         ArrayList<Token> tokenArr = mStringArrayList;
+        ArrayList<Token> answer = solveAnswer(tokenArr);
+        if(answer.isEmpty()) {
+            throw new InvalidFormatError();
+        }
         return solveAnswer(tokenArr).get(0).getNumber();
     }
-    private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) {
+    private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) throws InvalidFormatError{
         while(isParenthesisExist(tokenArr)) {
             ArrayList<ArrayList<Token>> arrays = splitByParenthesis(tokenArr);
             ArrayList<Token> solvedArray = solveAnswer(arrays.get(1));
@@ -24,17 +58,9 @@ public class Calculation {
             tokenArr.addAll(arrays.get(2));
         }
         solve(tokenArr, PrimaryOperators.class);
+
         solve(tokenArr, SecondaryOperators.class);
         return tokenArr;
-    }
-
-    //Print stringArrayList (for debug/testing)
-    private void printStrArr(ArrayList<String> strArr) {
-        System.out.print("::::::::");
-        for(String s : strArr) {
-            System.out.print(s + " ");
-        }
-        System.out.println();
     }
 
     private boolean isParenthesisExist(ArrayList<Token> tokenArr) {
@@ -46,15 +72,22 @@ public class Calculation {
         return false;
     }
 
-
-
-    private void solve(ArrayList<Token> tokenArr, Class<?> c) {
+    private void solve(ArrayList<Token> tokenArr, Class<?> c) throws InvalidFormatError {
         for(int i = 0; i < tokenArr.size(); i++) {
             Token current = tokenArr.get(i);
             if(c.isInstance(current)) {
                 OperatorToken operatorTokenToken = (OperatorToken) current;
-                NumberToken solvedToken = operatorTokenToken.calculate(tokenArr.get(i-1), tokenArr.get(i+1));
 
+                if(i+1 >= tokenArr.size() ||                    //when a number does not exist after the operator
+                   i == 0 ||                                    //when a number does not exist before the operator
+                   tokenArr.get(i+1) instanceof OperatorToken)  // when a number does not exist between the operators
+                {
+                    throw new InvalidFormatError();
+                }
+
+                Token num1 = tokenArr.get(i-1);
+                Token num2 = tokenArr.get(i+1);
+                NumberToken solvedToken = operatorTokenToken.calculate(num1, num2);
                 tokenArr.set(i-1, solvedToken);
                 tokenArr.remove(i);
                 tokenArr.remove(i);
@@ -84,7 +117,6 @@ public class Calculation {
                 } else {
                     tokenArr.add(new Parenthesis(c));
                 }
-
                 number = new StringBuffer();
             }
         }
@@ -100,22 +132,15 @@ public class Calculation {
         int fromIndex = indexOfPs.get(0).get(0);
         int toIndex = indexOfPs.get(1).get(indexOfPs.get(1).size()-1);
 
-        ArrayList<Token> subArray0 = subArrayList(arr, 0, fromIndex);
-        ArrayList<Token> subArray1 = subArrayList(arr, fromIndex+1, toIndex);
-        ArrayList<Token> subArray2 = subArrayList(arr, toIndex+1, arr.size());
+        ArrayList<Token> subArray0 = (ArrayList<Token>) arr.subList(0, fromIndex);
+        ArrayList<Token> subArray1 = (ArrayList<Token>) arr.subList(fromIndex+1, toIndex);
+        ArrayList<Token> subArray2 = (ArrayList<Token>) arr.subList(toIndex+1, arr.size());
+
         ArrayList<ArrayList<Token>> arrays = new ArrayList<>();
         arrays.add(subArray0);
         arrays.add(subArray1);
         arrays.add(subArray2);
         return arrays;
-    }
-
-    private ArrayList<Token> subArrayList(ArrayList<Token> arr, int fromIndex, int toIndex) {
-        ArrayList<Token> substractedList = new ArrayList<>();
-        for(int i = fromIndex; i < toIndex; i++) {
-            substractedList.add(arr.get(i));
-        }
-        return substractedList;
     }
 
     //Need change for the exceptions such as [ when the parenthesis are not paired]
@@ -136,11 +161,13 @@ public class Calculation {
             }
         }
 
+
         ArrayList<ArrayList<Integer>> arrays = new ArrayList<>();
         arrays.add(openingStack);
         arrays.add(closingStack);
         return arrays;
     }
+
 
 
 }

@@ -9,9 +9,10 @@
         android:id="@+id/InputText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/input_text"
         android:textSize="30sp"
-        />
+        android:autofillHints="@string/input_text"
+        android:inputType="text"
+        tools:ignore="LabelFor" />
     <TextView
         android:id="@+id/AnswerText"
         android:layout_width="match_parent"
