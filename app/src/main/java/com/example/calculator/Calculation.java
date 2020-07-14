@@ -63,15 +63,6 @@ public class Calculation {
         return tokenArr;
     }
 
-    //Print stringArrayList (for debug/testing)
-    private void printStrArr(ArrayList<String> strArr) {
-        System.out.print("::::::::");
-        for(String s : strArr) {
-            System.out.print(s + " ");
-        }
-        System.out.println();
-    }
-
     private boolean isParenthesisExist(ArrayList<Token> tokenArr) {
         for(Token t : tokenArr) {
             if(t instanceof Parenthesis) {
@@ -136,7 +127,7 @@ public class Calculation {
         return tokenArr;
     }
 
-    private ArrayList<ArrayList<Token>> splitByParenthesis(ArrayList<Token> arr) throws InvalidFormatError {
+    private ArrayList<ArrayList<Token>> splitByParenthesis(ArrayList<Token> arr) {
         ArrayList<ArrayList<Integer>> indexOfPs = findingParenthesis(arr);
         int fromIndex = indexOfPs.get(0).get(0);
         int toIndex = indexOfPs.get(1).get(indexOfPs.get(1).size()-1);
@@ -153,7 +144,7 @@ public class Calculation {
     }
 
     //Need change for the exceptions such as [ when the parenthesis are not paired]
-    private ArrayList<ArrayList<Integer>> findingParenthesis(ArrayList<Token> arr) throws InvalidFormatError {
+    private ArrayList<ArrayList<Integer>> findingParenthesis(ArrayList<Token> arr) {
         ArrayList<Integer> openingStack = new ArrayList<>();
         ArrayList<Integer> closingStack = new ArrayList<>();
 

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,7 +14,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private TextView inputText;
+    private EditText inputText;
     private TextView answerText;
     private ArrayList<Character> inputTextArr;
     private int cursorIndex;
@@ -50,10 +51,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         answerText = findViewById(R.id.AnswerText);
         inputText = findViewById(R.id.InputText);
+        inputText.setShowSoftInputOnFocus(false);
         inputTextArr = new ArrayList<>();
+        inputText.requestFocus();
         cursorIndex = 0;
         inputText.setText("");
-        //inputText.onResolvePointerIcon(null , cursorIndex);
+
+        inputText.setSelection(cursorIndex);
+
 
         buttonOpeningParenthesis.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View view) {
                 if(cursorIndex > 0) {
                     cursorIndex--;
-                    //inputText.onResolvePointerIcon(null , cursorIndex);
+                    inputText.setSelection(cursorIndex);
                 }
             }
         });
@@ -163,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View view) {
                 if(cursorIndex < inputTextArr.size()) {
                     cursorIndex++;
-                    //inputText.onResolvePointerIcon(null , cursorIndex);
+                    inputText.setSelection(cursorIndex);
                 }
             }
         });
@@ -191,9 +196,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View view) {
                 inputTextArr = new ArrayList<>();
                 cursorIndex = 0;
-                //inputText.onResolvePointerIcon(null , cursorIndex);
                 inputText.setText("");
                 answerText.setText("");
+                inputText.setSelection(cursorIndex);
             }
         });
         buttonDel.setOnClickListener(new View.OnClickListener() {
@@ -204,12 +209,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 inputTextArr.remove(cursorIndex-1);
                 cursorIndex--;
-                //inputText.onResolvePointerIcon( , cursorIndex);
                 StringBuffer inputStr = new StringBuffer();
                 for(char c : inputTextArr) {
                     inputStr.append(c);
                 }
                 inputText.setText(inputStr);
+                inputText.setSelection(cursorIndex);
             }
         });
 
@@ -219,12 +224,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void addInputText(char c) {
         inputTextArr.add(cursorIndex, c);
         cursorIndex++;
-        //inputText.onResolvePointerIcon(null , cursorIndex);
         StringBuffer text = new StringBuffer();
         for(char ch : inputTextArr) {
             text.append(ch);
         }
         inputText.setText(text);
+        inputText.setSelection(cursorIndex);
     }
 
     @Override
