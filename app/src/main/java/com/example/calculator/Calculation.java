@@ -27,15 +27,14 @@ public class Calculation {
         if(opening != closing) {
             int addParenthesis = opening - closing;
             int repeat = Math.abs(addParenthesis);
-            Parenthesis p;
-            if(addParenthesis > 0) {
-                p = new Parenthesis(')');
-            } else {
-                p = new Parenthesis('(');
-            }
+
 
             for(int i = 0; i < repeat; i++) {
-                mStringArrayList.add(p);
+                if(addParenthesis > 0) {
+                    mStringArrayList.add(new Parenthesis(')'));
+                } else {
+                    mStringArrayList.add(0, new Parenthesis('('));
+                }
             }
         }
     }
@@ -132,9 +131,9 @@ public class Calculation {
         int fromIndex = indexOfPs.get(0).get(0);
         int toIndex = indexOfPs.get(1).get(indexOfPs.get(1).size()-1);
 
-        ArrayList<Token> subArray0 = (ArrayList<Token>) arr.subList(0, fromIndex);
-        ArrayList<Token> subArray1 = (ArrayList<Token>) arr.subList(fromIndex+1, toIndex);
-        ArrayList<Token> subArray2 = (ArrayList<Token>) arr.subList(toIndex+1, arr.size());
+        ArrayList<Token> subArray0 = new ArrayList<>(arr.subList(0, fromIndex));
+        ArrayList<Token> subArray1 = new ArrayList<>(arr.subList(fromIndex+1, toIndex));
+        ArrayList<Token> subArray2 = new ArrayList<>(arr.subList(toIndex+1, arr.size()));
 
         ArrayList<ArrayList<Token>> arrays = new ArrayList<>();
         arrays.add(subArray0);
