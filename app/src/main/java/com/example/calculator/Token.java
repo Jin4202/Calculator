@@ -1,21 +1,10 @@
 package com.example.calculator;
 
 public abstract class Token {
+    public abstract char getOperator();
 
-    private char operator;
-    private double number;
+    public abstract int getmNumerator();
 
-    public Token(char operator, double number) {
-        this.operator = operator;
-        this.number = number;
-    }
-
-    public char getOperator() {
-        return operator;
-    }
-
-    public double getNumber() {
-        return number;
-    }
+    public abstract int getmDenominator();
 
 }

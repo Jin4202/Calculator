@@ -5,15 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
+    private boolean formatFraction;
     private EditText inputText;
     private TextView answerText;
     private ArrayList<Character> inputTextArr;
@@ -26,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Button buttonOpeningParenthesis = findViewById(R.id.ButtonParenO);
         Button buttonClosingParenthesis = findViewById(R.id.ButtonParenC);
+        ToggleButton buttonFraction = findViewById(R.id.ButtonFraction);
 
         Button button1 = findViewById(R.id.Button1);
         Button button2 = findViewById(R.id.Button2);
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button buttonSub = findViewById(R.id.ButtonSub);
         Button buttonMulti = findViewById(R.id.ButtonMulti);
         Button buttonDiv = findViewById(R.id.ButtonDiv);
-        Button buttonSolve = findViewById(R.id.ButtonSolve);
+        final Button buttonSolve = findViewById(R.id.ButtonSolve);
         Button buttonLeft = findViewById(R.id.ButtonLeft);
         Button buttonRight = findViewById(R.id.ButtonRight);
         Button buttonReset = findViewById(R.id.ButtonReset);
@@ -56,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         inputText.requestFocus();
         cursorIndex = 0;
         inputText.setText("");
+        formatFraction = false;
 
         inputText.setSelection(cursorIndex);
 
@@ -173,20 +178,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-
         buttonSolve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(inputText.length() == 0) {
                     return;
                 }
-                Calculation calculation = new Calculation(inputTextArr);
                 try {
-                    answerText.setText(String.format(Locale.US, "%f", calculation.solveAnswer()));
+                    Calculation calculation = new Calculation(inputTextArr);
+                    ArrayList<Integer> list = calculation.solveAnswer();
+                    int numerator = list.get(0);
+                    int denominator = list.get(1);
+                    if(formatFraction) {
+                        answerText.setText(String.format(Locale.US, "%d/%d", numerator, denominator));
+                    } else {
+                        if(denominator == 1) {
+                            answerText.setText(String.format(Locale.US, "%d", numerator));
+                        } else {
+                            double answer = (double) numerator / denominator;
+                            answerText.setText(String.format(Locale.US, "%.5f", answer));
+                        }
+                    }
                 } catch (InvalidFormatError e) {
                     Toast.makeText(MainActivity.this, "Invalid format used", Toast.LENGTH_SHORT).show();
-                } catch (ArithmeticException e) {
+                } catch (ZeroDivisionException e) {
                     Toast.makeText(MainActivity.this, "Cannot divide by zero", Toast.LENGTH_SHORT).show();
+                } catch (OverflowException e) {
+                    Toast.makeText(MainActivity.this, "Cannot handle more than 10 digits", Toast.LENGTH_SHORT).show();
+                } catch (ArithmeticException e) {
+                    Toast.makeText(MainActivity.this, "The result is too large", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -217,8 +237,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 inputText.setSelection(cursorIndex);
             }
         });
-
-
+        buttonFraction.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                formatFraction = b;
+                buttonSolve.performClick();
+            }
+        });
     }
 
     private void addInputText(char c) {
@@ -234,6 +259,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
+
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
     }
 }

@@ -172,4 +172,13 @@
         android:layout_height="wrap_content"
         android:text="@string/delete"
         android:layout_below="@id/Button0"/>
+    <ToggleButton
+        android:id="@+id/ButtonFraction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOn="@string/fraction"
+        android:textOff="@string/number"
+        android:layout_alignBaseline="@id/ButtonParenO"
+        android:layout_toStartOf="@id/Button2"
+        />
 </RelativeLayout>

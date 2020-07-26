@@ -6,7 +6,7 @@ public class Calculation {
 
     private ArrayList<Token> mStringArrayList;
 
-    public Calculation(ArrayList<Character> arr) {
+    public Calculation(ArrayList<Character> arr) throws OverflowException {
         mStringArrayList = setTokenArrayList(arr);
         pairParenthesis();
     }
@@ -39,13 +39,17 @@ public class Calculation {
         }
     }
 
-    public double solveAnswer() throws InvalidFormatError{
+    public ArrayList<Integer> solveAnswer() throws InvalidFormatError{
         ArrayList<Token> tokenArr = mStringArrayList;
         ArrayList<Token> answer = solveAnswer(tokenArr);
         if(answer.isEmpty()) {
             throw new InvalidFormatError();
         }
-        return solveAnswer(tokenArr).get(0).getNumber();
+        Token t = solveAnswer(tokenArr).get(0);
+        ArrayList<Integer> answerList = new ArrayList<>();
+        answerList.add(t.getmNumerator());
+        answerList.add(t.getmDenominator());
+        return answerList;
     }
     private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) throws InvalidFormatError{
         while(isParenthesisExist(tokenArr)) {
@@ -95,7 +99,7 @@ public class Calculation {
         }
     }
 
-    private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) {
+    private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) throws OverflowException {
         ArrayList<Token> tokenArr = new ArrayList<>();
         StringBuffer number = new StringBuffer();
         for(char c : charArr) {
@@ -103,7 +107,15 @@ public class Calculation {
                 number.append(c);
             } else {
                 if(!number.toString().equals("")) {
-                    tokenArr.add(new NumberToken(Double.parseDouble(number.toString())));
+                    String numStr = number.toString();
+                    if(numStr.length() >= 10) {
+                        throw new OverflowException();
+                    }
+                    if(numStr.indexOf('.') == -1) {
+                        tokenArr.add(new NumberToken(Integer.parseInt(numStr)));
+                    } else {
+                        tokenArr.add(new NumberToken(Double.parseDouble(numStr)));
+                    }
                 }
                 if(c == 'x') {
                     tokenArr.add(new Multiply());
@@ -121,7 +133,15 @@ public class Calculation {
         }
 
         if(!number.toString().equals("")) {
-            tokenArr.add(new NumberToken(Double.parseDouble(number.toString())));
+            String numStr = number.toString();
+            if(numStr.length() >= 10) {
+                throw new OverflowException();
+            }
+            if(numStr.indexOf('.') == -1) {
+                tokenArr.add(new NumberToken(Integer.parseInt(numStr)));
+            } else {
+                tokenArr.add(new NumberToken(Double.parseDouble(numStr)));
+            }
         }
         return tokenArr;
     }
