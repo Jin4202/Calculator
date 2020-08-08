@@ -3,7 +3,7 @@ package com.example.calculator;
 public abstract class OperatorToken extends Token{
     private char operator;
     public OperatorToken(char operator) {
-        super(operator, 0);
+        super();
         this.operator = operator;
     }
 
@@ -12,4 +12,14 @@ public abstract class OperatorToken extends Token{
     }
 
     public abstract NumberToken calculate(Token num1, Token num2);
+
+    @Override
+    public int getmNumerator() {
+        return 0;
+    }
+
+    @Override
+    public int getmDenominator() {
+        return 0;
+    }
 }

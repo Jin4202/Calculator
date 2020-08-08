@@ -8,10 +8,11 @@ public class Divide extends PrimaryOperators {
     }
 
     public NumberToken calculate(Token num1, Token num2) {
-        double num2safe = num2.getNumber();
-        if(Double.compare(num2safe,0) == 0) {
-            throw new ArithmeticException();
+        int newNumerator = Math.multiplyExact(num1.getmNumerator(), num2.getmDenominator());
+        int newDenominator = Math.multiplyExact(num1.getmDenominator(), num2.getmNumerator());
+        if(newDenominator == 0) {
+            throw new ZeroDivisionException();
         }
-        return new NumberToken(num1.getNumber()/num2safe);
+        return new NumberToken(newNumerator, newDenominator);
     }
 }

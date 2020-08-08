@@ -6,7 +6,7 @@ public class Calculation {
 
     private ArrayList<Token> mStringArrayList;
 
-    public Calculation(ArrayList<Character> arr) {
+    public Calculation(ArrayList<Character> arr) throws OverflowException {
         mStringArrayList = setTokenArrayList(arr);
         pairParenthesis();
     }
@@ -27,26 +27,29 @@ public class Calculation {
         if(opening != closing) {
             int addParenthesis = opening - closing;
             int repeat = Math.abs(addParenthesis);
-            Parenthesis p;
-            if(addParenthesis > 0) {
-                p = new Parenthesis(')');
-            } else {
-                p = new Parenthesis('(');
-            }
+
 
             for(int i = 0; i < repeat; i++) {
-                mStringArrayList.add(p);
+                if(addParenthesis > 0) {
+                    mStringArrayList.add(new Parenthesis(')'));
+                } else {
+                    mStringArrayList.add(0, new Parenthesis('('));
+                }
             }
         }
     }
 
-    public double solveAnswer() throws InvalidFormatError{
+    public ArrayList<Integer> solveAnswer() throws InvalidFormatError{
         ArrayList<Token> tokenArr = mStringArrayList;
         ArrayList<Token> answer = solveAnswer(tokenArr);
         if(answer.isEmpty()) {
             throw new InvalidFormatError();
         }
-        return solveAnswer(tokenArr).get(0).getNumber();
+        Token t = solveAnswer(tokenArr).get(0);
+        ArrayList<Integer> answerList = new ArrayList<>();
+        answerList.add(t.getmNumerator());
+        answerList.add(t.getmDenominator());
+        return answerList;
     }
     private ArrayList<Token> solveAnswer(ArrayList<Token> tokenArr) throws InvalidFormatError{
         while(isParenthesisExist(tokenArr)) {
@@ -96,7 +99,7 @@ public class Calculation {
         }
     }
 
-    private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) {
+    private ArrayList<Token> setTokenArrayList(ArrayList<Character> charArr) throws OverflowException {
         ArrayList<Token> tokenArr = new ArrayList<>();
         StringBuffer number = new StringBuffer();
         for(char c : charArr) {
@@ -104,7 +107,15 @@ public class Calculation {
                 number.append(c);
             } else {
                 if(!number.toString().equals("")) {
-                    tokenArr.add(new NumberToken(Double.parseDouble(number.toString())));
+                    String numStr = number.toString();
+                    if(numStr.length() >= 10) {
+                        throw new OverflowException();
+                    }
+                    if(numStr.indexOf('.') == -1) {
+                        tokenArr.add(new NumberToken(Integer.parseInt(numStr)));
+                    } else {
+                        tokenArr.add(new NumberToken(Double.parseDouble(numStr)));
+                    }
                 }
                 if(c == 'x') {
                     tokenArr.add(new Multiply());
@@ -122,7 +133,15 @@ public class Calculation {
         }
 
         if(!number.toString().equals("")) {
-            tokenArr.add(new NumberToken(Double.parseDouble(number.toString())));
+            String numStr = number.toString();
+            if(numStr.length() >= 10) {
+                throw new OverflowException();
+            }
+            if(numStr.indexOf('.') == -1) {
+                tokenArr.add(new NumberToken(Integer.parseInt(numStr)));
+            } else {
+                tokenArr.add(new NumberToken(Double.parseDouble(numStr)));
+            }
         }
         return tokenArr;
     }
@@ -132,9 +151,9 @@ public class Calculation {
         int fromIndex = indexOfPs.get(0).get(0);
         int toIndex = indexOfPs.get(1).get(indexOfPs.get(1).size()-1);
 
-        ArrayList<Token> subArray0 = (ArrayList<Token>) arr.subList(0, fromIndex);
-        ArrayList<Token> subArray1 = (ArrayList<Token>) arr.subList(fromIndex+1, toIndex);
-        ArrayList<Token> subArray2 = (ArrayList<Token>) arr.subList(toIndex+1, arr.size());
+        ArrayList<Token> subArray0 = new ArrayList<>(arr.subList(0, fromIndex));
+        ArrayList<Token> subArray1 = new ArrayList<>(arr.subList(fromIndex+1, toIndex));
+        ArrayList<Token> subArray2 = new ArrayList<>(arr.subList(toIndex+1, arr.size()));
 
         ArrayList<ArrayList<Token>> arrays = new ArrayList<>();
         arrays.add(subArray0);

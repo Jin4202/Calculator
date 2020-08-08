@@ -6,6 +6,6 @@ public class Multiply extends PrimaryOperators {
     }
 
     public NumberToken calculate(Token num1, Token num2) {
-        return new NumberToken(num1.getNumber()*num2.getNumber());
+        return new NumberToken(Math.multiplyExact(num1.getmNumerator(), num2.getmNumerator()), Math.multiplyExact(num1.getmDenominator(), num2.getmDenominator()));
     }
 }

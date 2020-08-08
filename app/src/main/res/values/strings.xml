@@ -24,6 +24,9 @@
     <string name="opening_parenthesis">(</string>
     <string name="closing_parenthesis">)</string>
     <string name="dot">.</string>
+    <string name="fraction">a/b</string>
+    <string name="number">123</string>
+
 
 
 
