@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         answerTextDenominator.measure(0,0);
         int numeratorWidth = answerText.getMeasuredWidth();
         int denominatorWidth = answerTextDenominator.getMeasuredWidth();
-        Log.d("Debug", "Numerator: " + numeratorWidth + "::: Denominator: " + denominatorWidth);
+        //Log.d("Debug", "Numerator: " + numeratorWidth + "::: Denominator: " + denominatorWidth);
         fractionDivider.getLayoutParams().width = Math.max(numeratorWidth, denominatorWidth);
         fractionDivider.requestLayout();
     }
