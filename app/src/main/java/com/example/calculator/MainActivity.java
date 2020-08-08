@@ -2,11 +2,16 @@ package com.example.calculator;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Layout;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -21,11 +26,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView answerText;
     private ArrayList<Character> inputTextArr;
     private int cursorIndex;
+    private Button buttonSolve;
+    private View fractionDivider;
+    private TextView answerTextDenominator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        RelativeLayout mainLayout  = findViewById(R.id.MainLayout);
 
         Button buttonOpeningParenthesis = findViewById(R.id.ButtonParenO);
         Button buttonClosingParenthesis = findViewById(R.id.ButtonParenC);
@@ -47,22 +57,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button buttonSub = findViewById(R.id.ButtonSub);
         Button buttonMulti = findViewById(R.id.ButtonMulti);
         Button buttonDiv = findViewById(R.id.ButtonDiv);
-        final Button buttonSolve = findViewById(R.id.ButtonSolve);
+        buttonSolve = findViewById(R.id.ButtonSolve);
         Button buttonLeft = findViewById(R.id.ButtonLeft);
         Button buttonRight = findViewById(R.id.ButtonRight);
         Button buttonReset = findViewById(R.id.ButtonReset);
         Button buttonDel = findViewById(R.id.ButtonDel);
 
+        fractionDivider = findViewById(R.id.FractionDivider);
+
         answerText = findViewById(R.id.AnswerText);
+        answerTextDenominator = findViewById(R.id.AnswerTextDenominator);
         inputText = findViewById(R.id.InputText);
         inputText.setShowSoftInputOnFocus(false);
         inputTextArr = new ArrayList<>();
         inputText.requestFocus();
         cursorIndex = 0;
         inputText.setText("");
+
         formatFraction = false;
+        updateFraction(false);
 
         inputText.setSelection(cursorIndex);
+
 
 
         buttonOpeningParenthesis.setOnClickListener(new View.OnClickListener() {
@@ -190,7 +206,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     int numerator = list.get(0);
                     int denominator = list.get(1);
                     if(formatFraction) {
-                        answerText.setText(String.format(Locale.US, "%d/%d", numerator, denominator));
+                        answerText.setText(String.format(Locale.US, "%d", numerator));
+                        answerTextDenominator.setText(String.format(Locale.US, "%d", denominator));
+                        setDividerWidth();
                     } else {
                         if(denominator == 1) {
                             answerText.setText(String.format(Locale.US, "%d", numerator));
@@ -218,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 cursorIndex = 0;
                 inputText.setText("");
                 answerText.setText("");
+                answerTextDenominator.setText("");
                 inputText.setSelection(cursorIndex);
             }
         });
@@ -242,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 formatFraction = b;
                 buttonSolve.performClick();
+                updateFraction(formatFraction);
             }
         });
     }
@@ -257,6 +277,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         inputText.setSelection(cursorIndex);
     }
 
+    private void setDividerWidth() {
+        answerText.measure(0,0);
+        answerTextDenominator.measure(0,0);
+        int numeratorWidth = answerText.getMeasuredWidth();
+        int denominatorWidth = answerTextDenominator.getMeasuredWidth();
+        Log.d("Debug", "Numerator: " + numeratorWidth + "::: Denominator: " + denominatorWidth);
+        fractionDivider.getLayoutParams().width = Math.max(numeratorWidth, denominatorWidth);
+        fractionDivider.requestLayout();
+    }
+
+    private void updateFraction(boolean visible) {
+        if(visible) {
+            fractionDivider.setVisibility(View.VISIBLE);
+            answerTextDenominator.setVisibility(View.VISIBLE);
+        } else {
+            fractionDivider.setVisibility(View.INVISIBLE);
+            answerTextDenominator.setVisibility(View.INVISIBLE);
+        }
+    }
+
+
     @Override
     public void onClick(View view) {
 
@@ -266,4 +307,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
     }
+
+
 }
