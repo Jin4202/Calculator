@@ -2,6 +2,7 @@ package com.example.calculator;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Layout;
@@ -29,12 +30,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button buttonSolve;
     private View fractionDivider;
     private TextView answerTextDenominator;
+    private int screenWidth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        RelativeLayout mainLayout = findViewById(R.id.MainLayout);
+        mainLayout.measure(0,0);
+        screenWidth = mainLayout.getMeasuredWidth();
+        
         Button buttonOpeningParenthesis = findViewById(R.id.ButtonParenO);
         Button buttonClosingParenthesis = findViewById(R.id.ButtonParenC);
         ToggleButton buttonFraction = findViewById(R.id.ButtonFraction);
@@ -203,17 +209,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ArrayList<Integer> list = calculation.solveAnswer();
                     int numerator = list.get(0);
                     int denominator = list.get(1);
+                    updateFraction(formatFraction);
                     if(formatFraction) {
                         answerText.setText(String.format(Locale.US, "%d", numerator));
                         answerTextDenominator.setText(String.format(Locale.US, "%d", denominator));
                         setDividerWidth();
                     } else {
+                        answerText.getLayoutParams().width = screenWidth;
+                        answerText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
                         if(denominator == 1) {
                             answerText.setText(String.format(Locale.US, "%d", numerator));
                         } else {
                             double answer = (double) numerator / denominator;
                             answerText.setText(String.format(Locale.US, "%.5f", answer));
                         }
+                        answerText.requestLayout();
                     }
                 } catch (InvalidFormatError e) {
                     Toast.makeText(MainActivity.this, "Invalid format used", Toast.LENGTH_SHORT).show();
@@ -233,8 +243,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 inputTextArr = new ArrayList<>();
                 cursorIndex = 0;
                 inputText.setText("");
-                answerText.setText("");
-                answerTextDenominator.setText("");
+                resetAnswerTexts();
+                updateFraction(false);
                 inputText.setSelection(cursorIndex);
             }
         });
@@ -259,7 +269,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 formatFraction = b;
                 buttonSolve.performClick();
-                updateFraction(formatFraction);
             }
         });
     }
@@ -278,11 +287,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setDividerWidth() {
         answerText.measure(0,0);
         answerTextDenominator.measure(0,0);
-        int numeratorWidth = answerText.getMeasuredWidth();
-        int denominatorWidth = answerTextDenominator.getMeasuredWidth();
+        int maxWidth = Math.max(answerText.getMeasuredWidth(), answerTextDenominator.getMeasuredWidth());
         //Log.d("Debug", "Numerator: " + numeratorWidth + "::: Denominator: " + denominatorWidth);
-        fractionDivider.getLayoutParams().width = Math.max(numeratorWidth, denominatorWidth);
+        fractionDivider.getLayoutParams().width = maxWidth;
+        answerText.getLayoutParams().width = maxWidth;
+        answerText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        answerTextDenominator.getLayoutParams().width = maxWidth;
+        answerTextDenominator.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         fractionDivider.requestLayout();
+        answerText.requestLayout();
+        answerTextDenominator.requestLayout();
     }
 
     private void updateFraction(boolean visible) {
@@ -291,6 +305,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         answerTextDenominator.setVisibility(visibility);
     }
 
+    private void resetAnswerTexts() {
+        answerText.setText("");
+        answerTextDenominator.clearComposingText();
+
+    }
 
     @Override
     public void onClick(View view) {
