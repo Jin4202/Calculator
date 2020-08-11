@@ -35,8 +35,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RelativeLayout mainLayout  = findViewById(R.id.MainLayout);
-
         Button buttonOpeningParenthesis = findViewById(R.id.ButtonParenO);
         Button buttonClosingParenthesis = findViewById(R.id.ButtonParenC);
         ToggleButton buttonFraction = findViewById(R.id.ButtonFraction);
@@ -288,13 +286,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void updateFraction(boolean visible) {
-        if(visible) {
-            fractionDivider.setVisibility(View.VISIBLE);
-            answerTextDenominator.setVisibility(View.VISIBLE);
-        } else {
-            fractionDivider.setVisibility(View.INVISIBLE);
-            answerTextDenominator.setVisibility(View.INVISIBLE);
-        }
+        int visibility = visible ? View.VISIBLE : View.INVISIBLE;
+        fractionDivider.setVisibility(visibility);
+        answerTextDenominator.setVisibility(visibility);
     }
 
 
